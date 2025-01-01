@@ -60,3 +60,93 @@ public:
         return ans;
     }
 };
+
+
+
+
+
+
+
+
+#include <iostream>
+#include <thread>
+#include <mutex>
+#include <condition_variable>
+using namespace std;
+
+class BinarySemaphore {
+private:
+    bool available = true; 
+     mutex mtx;
+     condition_variable cv;
+
+public:
+    void wait() {
+         unique_lock< mutex> lock(mtx);
+        cv.wait(lock, [this]() { return available; }); 
+        available = false; 
+    }
+
+    void signal() {
+         unique_lock< mutex> lock(mtx);
+        available = true; 
+        cv.notify_one(); 
+    }
+};
+
+BinarySemaphore semaphore;
+int sharedCounter = 0;
+
+void increment(int id) {
+    semaphore.wait();
+    sharedCounter++;
+     cout << "Thread " << id << " incremented counter to " << sharedCounter <<  endl;
+    semaphore.signal();
+}
+
+int main() {
+    const int numThreads = 5;
+     thread threads[numThreads];
+
+    for (int i = 0; i < numThreads; i++) {
+        threads[i] =  thread(increment, i + 1);
+    }
+
+    for (auto& t : threads) {
+        t.join();
+    }
+
+     cout << "Final  value: " << sharedCounter <<  endl;
+    return 0;
+}
+class Solution {
+public:
+    int findTheDistanceValue(vector<int>& arr1, vector<int>& arr2, int d) {
+        int n = arr1.size();
+        int m = arr2.size();
+      
+       int count =0,c=0;
+       for(int i=0;i<n;i++){
+         c=0;
+          for(int j=0;j<m;j++){
+            if(arr1[i]>arr2[j]){
+                if(arr1[i] - arr2[j] > d){
+                    c++;
+                }else{
+                    break;
+                }
+            }else{
+                 if(arr2[j] - arr1[i] > d){
+                    c++;
+                }else{
+                    break;
+                }
+            }
+          }
+          if(c == m){
+            count++;
+          }
+       }
+       return count; 
+    }
+};
